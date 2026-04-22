@@ -1,0 +1,53 @@
+.status-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bar-bg);
+  border-bottom: 1px solid var(--border);
+  padding: 0.65rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  min-height: 48px;
+  backdrop-filter: blur(8px);
+}
+
+.status-bar--active {
+  color: var(--text);
+}
+
+.status-bar__idle {
+  color: var(--text-muted);
+}
+
+.status-bar__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.status-bar__spinner {
+  flex-shrink: 0;
+}
+
+.status-bar__actions {
+  display: flex;
+  gap: 0.4rem;
+  margin-left: auto;
+}
+
+.status-bar__error {
+  margin-left: auto;
+  color: var(--danger);
+  font-size: 0.8rem;
+}

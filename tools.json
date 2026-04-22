@@ -1,0 +1,34 @@
+[
+  {
+    "id": "filebrowser",
+    "name": "File Browser",
+    "description": "Web-based file manager for browsing and managing files",
+    "image": "filebrowser/filebrowser:latest",
+    "containerPort": 80,
+    "icon": "📁",
+    "env": {},
+    "volumes": []
+  },
+  {
+    "id": "code-server",
+    "name": "VS Code",
+    "description": "Browser-based VS Code editor",
+    "image": "codercom/code-server:latest",
+    "containerPort": 8080,
+    "icon": "💻",
+    "env": {
+      "PASSWORD": "changeme"
+    },
+    "volumes": []
+  },
+  {
+    "id": "drawio",
+    "name": "Draw.io",
+    "description": "Diagramming and whiteboard tool",
+    "image": "jgraph/drawio:latest",
+    "containerPort": 8080,
+    "icon": "🖊️",
+    "env": {},
+    "volumes": []
+  }
+]
