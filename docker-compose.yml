@@ -6,4 +6,5 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./tools.json:/app/tools.json
+      - ./tools:/app/tools
     restart: unless-stopped
