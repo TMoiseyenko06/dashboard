@@ -6,7 +6,6 @@
     "image": "filebrowser/filebrowser:latest",
     "containerPort": 80,
     "icon": "📁",
-    "env": {},
     "volumes": []
   },
   {
@@ -16,9 +15,6 @@
     "image": "codercom/code-server:latest",
     "containerPort": 8080,
     "icon": "💻",
-    "env": {
-      "PASSWORD": "changeme"
-    },
     "volumes": []
   },
   {
@@ -28,7 +24,6 @@
     "image": "jgraph/drawio:latest",
     "containerPort": 8080,
     "icon": "🖊️",
-    "env": {},
     "volumes": []
   }
 ]

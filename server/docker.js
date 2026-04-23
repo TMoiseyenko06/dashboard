@@ -1,4 +1,6 @@
 const Docker = require('dockerode');
+const fs = require('fs');
+const path = require('path');
 const state = require('./state');
 
 const docker = new Docker({ socketPath: '/var/run/docker.sock' });
@@ -35,7 +37,14 @@ async function launchContainer(tool, hostPort = HOST_PORT) {
     console.log(`\nImage pulled.`);
   }
 
-  const envArray = Object.entries(tool.env || {}).map(([k, v]) => `${k}=${v}`);
+  let envArray = [];
+  if (tool.envFile) {
+    const envPath = path.resolve(__dirname, '..', tool.envFile);
+    const lines = fs.readFileSync(envPath, 'utf8').split('\n');
+    envArray = lines
+      .map((l) => l.trim())
+      .filter((l) => l && !l.startsWith('#'));
+  }
   const binds = Array.isArray(tool.volumes) ? tool.volumes : [];
 
   const container = await docker.createContainer({
