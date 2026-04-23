@@ -45,6 +45,9 @@ router.post('/launch/:id', async (req, res) => {
   state.launching = true;
   state.error = null;
 
+  // Capture previous container ID before overwriting state
+  const prevContainerId = state.running?.containerId ?? null;
+
   // Respond immediately so the UI can start polling
   state.running = {
     toolId: tool.id,
@@ -59,10 +62,10 @@ router.post('/launch/:id', async (req, res) => {
   // Background work
   (async () => {
     try {
-      // Stop previous container if any
-      if (state.running && state.running.containerId) {
-        const prevId = state.running.containerId;
-        await stopContainer(prevId);
+      // Stop previous container and wait for port to be released
+      if (prevContainerId) {
+        await stopContainer(prevContainerId);
+        await new Promise((r) => setTimeout(r, 1000));
       }
 
       const { containerId } = await launchContainer(tool, HOST_PORT);
