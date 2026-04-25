@@ -188,7 +188,7 @@ router.post('/update-all', (req, res) => {
         const toolPath = path.join(TOOLS_DIR, tool.id);
         const hasDockerfile = fs.existsSync(path.join(toolPath, 'Dockerfile'));
         if (hasDockerfile) {
-          const imageName = tool.image.split(':')[0] + ':latest';
+          const imageName = tool.image;
           log(`docker build -t ${imageName} . (tools/${tool.id})`);
           try {
             await runCommand('docker', ['build', '-t', imageName, '.'], toolPath);
