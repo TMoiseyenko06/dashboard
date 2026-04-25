@@ -6,6 +6,10 @@
 
 .header {
   margin-bottom: 2rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
 .header__title {
@@ -68,4 +72,11 @@
   background: transparent;
   color: var(--danger);
   border: 1px solid var(--danger);
+}
+
+.btn--update {
+  background: var(--btn-bg);
+  color: var(--text);
+  white-space: nowrap;
+  margin-top: 0.25rem;
 }

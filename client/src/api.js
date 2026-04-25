@@ -9,3 +9,9 @@ export const launchTool = (id) =>
 
 export const stopTool = () =>
   fetch('/api/stop', { method: 'POST' }).then((r) => r.json());
+
+export const startUpdateAll = () =>
+  fetch('/api/update-all', { method: 'POST' }).then((r) => r.json());
+
+export const fetchUpdateStatus = () =>
+  fetch('/api/update-status').then((r) => r.json());

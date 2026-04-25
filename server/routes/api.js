@@ -1,6 +1,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const { spawn } = require('child_process');
 const state = require('../state');
 const { launchContainer, stopContainer, HOST_PORT } = require('../docker');
 
@@ -106,6 +107,102 @@ router.post('/stop', (req, res) => {
       state.error = err.message;
     } finally {
       state.running = null;
+    }
+  })();
+});
+
+// --- Update All ---
+
+const TOOLS_DIR = path.join(__dirname, '..', '..', 'tools');
+
+function log(msg) {
+  const line = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  state.updateLog.push(line);
+  console.log(line);
+}
+
+function runCommand(cmd, args, cwd) {
+  return new Promise((resolve, reject) => {
+    const proc = spawn(cmd, args, { cwd, shell: false });
+    proc.stdout.on('data', (d) => d.toString().split('\n').filter(Boolean).forEach(log));
+    proc.stderr.on('data', (d) => d.toString().split('\n').filter(Boolean).forEach(log));
+    proc.on('close', (code) => {
+      if (code === 0) resolve();
+      else reject(new Error(`${cmd} exited with code ${code}`));
+    });
+  });
+}
+
+router.get('/update-status', (req, res) => {
+  res.json({ updating: state.updating, log: state.updateLog });
+});
+
+router.post('/update-all', (req, res) => {
+  if (state.updating) {
+    return res.status(409).json({ error: 'Update already in progress' });
+  }
+
+  state.updating = true;
+  state.updateLog = [];
+  res.status(202).json({ status: 'started' });
+
+  (async () => {
+    try {
+      // Stop running container
+      if (state.running?.containerId) {
+        log('Stopping running container...');
+        await stopContainer(state.running.containerId);
+        state.running = null;
+        log('Container stopped.');
+      }
+
+      // Find tool folders that have a .git repo and/or a Dockerfile
+      let toolFolders = [];
+      try {
+        toolFolders = fs.readdirSync(TOOLS_DIR, { withFileTypes: true })
+          .filter((d) => d.isDirectory())
+          .map((d) => d.name);
+      } catch {
+        log('No tools/ directory found, skipping git pull and build steps.');
+      }
+
+      // Git pull each tool that has a .git folder
+      for (const folder of toolFolders) {
+        const toolPath = path.join(TOOLS_DIR, folder);
+        const hasGit = fs.existsSync(path.join(toolPath, '.git'));
+        if (hasGit) {
+          log(`git pull → tools/${folder}`);
+          try {
+            await runCommand('git', ['pull'], toolPath);
+          } catch (err) {
+            log(`  ⚠ git pull failed: ${err.message}`);
+          }
+        }
+      }
+
+      // Rebuild Docker images for tools that have a local Dockerfile
+      let tools = [];
+      try { tools = readTools(); } catch { }
+
+      for (const tool of tools) {
+        const toolPath = path.join(TOOLS_DIR, tool.id);
+        const hasDockerfile = fs.existsSync(path.join(toolPath, 'Dockerfile'));
+        if (hasDockerfile) {
+          log(`docker build → ${tool.image} (tools/${tool.id})`);
+          try {
+            await runCommand('docker', ['build', '-t', tool.image, '.'], toolPath);
+            log(`  ✓ ${tool.image} built successfully`);
+          } catch (err) {
+            log(`  ⚠ build failed: ${err.message}`);
+          }
+        }
+      }
+
+      log('All done.');
+    } catch (err) {
+      log(`Error: ${err.message}`);
+    } finally {
+      state.updating = false;
     }
   })();
 });
