@@ -32,7 +32,7 @@ export default function ToolCard({ tool, runningStatus, onLaunch, onStop }) {
           <>
             <a
               className="btn btn--primary"
-              href={`http://${window.location.hostname}:${runningStatus.hostPort}`}
+              href="/tool/"
               target="_blank"
               rel="noreferrer"
             >

@@ -1,8 +1,10 @@
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
+const { createProxyMiddleware } = require('http-proxy-middleware');
 const { reconcileState } = require('./docker');
 const { stopContainer } = require('./docker');
+const { HOST_PORT } = require('./docker');
 const state = require('./state');
 const apiRouter = require('./routes/api');
 
@@ -16,6 +18,25 @@ if (!IS_PROD) {
 
 app.use(express.json());
 app.use('/api', apiRouter);
+
+// Proxy /tool/ → the currently running tool container on the host
+const toolProxy = createProxyMiddleware({
+  router: () => `http://host.docker.internal:${HOST_PORT}`,
+  changeOrigin: true,
+  pathRewrite: { '^/tool': '' },
+  ws: true,
+  on: {
+    error: (err, req, res) => {
+      if (res.writeHead) res.status(502).send('Tool not reachable');
+    },
+  },
+});
+app.use('/tool', (req, res, next) => {
+  if (!state.running || state.running.status !== 'running') {
+    return res.status(503).send('No tool is running');
+  }
+  toolProxy(req, res, next);
+});
 
 if (IS_PROD) {
   const staticPath = path.join(__dirname, 'public');

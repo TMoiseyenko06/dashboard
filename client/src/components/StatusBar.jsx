@@ -35,7 +35,7 @@ export default function StatusBar({ status, tools, onStop }) {
           <span className="status-bar__dot" />
           <span>{icon} <strong>{name}</strong> is running</span>
           <div className="status-bar__actions">
-            <a className="btn btn--sm btn--primary" href={`http://${window.location.hostname}:${r.hostPort}`} target="_blank" rel="noreferrer">Open</a>
+            <a className="btn btn--sm btn--primary" href="/tool/" target="_blank" rel="noreferrer">Open</a>
             <button className="btn btn--sm btn--danger" onClick={onStop}>Stop</button>
           </div>
         </>
